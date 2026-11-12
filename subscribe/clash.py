@@ -75,6 +75,17 @@ def filter_proxies(proxies: list[dict[str, object]]) -> dict[str, object]:
     unique_proxies, hosts = [], defaultdict(list)
 
     for item in proxies:
+        # 排除中国节点和未标注地区的节点（Lee 不需要）
+        _name = str(item.get("name", ""))
+        if "中国" in _name or "\\U0001f1e8\\U0001f1f3" in _name:
+            continue
+# 未标注地区：名字里既没有国旗 emoji，也没有常见地区名
+        _has_flag = any("\\U0001f1e6" <= _c <= "\\U0001f1ff" for _c in _name)
+        _regions = ["香港", "新加坡", "美国", "台湾", "日本", "韩国", "英国", "德国", "法国", "加拿大", "澳大利亚", "荷兰", "俄罗斯", "印度", "巴西", "土耳其", "泰国", "越南", "马来西亚", "印尼", "菲律宾", "阿根廷", "智利", "墨西哥", "西班牙", "意大利", "瑞士", "瑞典", "挪威", "芬兰", "丹麦", "波兰", "爱尔兰", "葡萄牙", "新西兰", "南非", "以色列", "阿联酋"]
+        _has_region = any(_r in _name for _r in _regions)
+        if not _has_flag and not _has_region:
+            continue
+        
         if not proxy_exists(item, hosts):
             unique_proxies.append(item)
             key = endpoint_key(item)
